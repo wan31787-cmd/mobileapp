@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';  // เพิ่ม import
 import 'package:mobile/states/authen.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +18,15 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
       ),
       home: const AuthenPage(),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('th', ''),
+        Locale('en', ''),
+      ],
     );
   }
 }

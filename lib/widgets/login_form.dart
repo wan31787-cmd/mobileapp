@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:mobile/states/authen.dart';
 import 'package:mobile/states/register.dart';
-import 'package:mobile/states/main_mobile.dart'; // เพิ่มตรงนี้
+import 'package:mobile/states/main_mobile.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({Key? key}) : super(key: key);
@@ -19,71 +18,46 @@ class _LoginFormState extends State<LoginForm> {
   bool _obscure = true;
   bool _loading = false;
 
-  List<dynamic> _users = []; // เก็บข้อมูล user ที่ดึงมา
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUsers();
-  }
-
-  Future<void> fetchUsers() async {
-    const apiUrl = "http://localhost/api/login.php"; // เปลี่ยนเป็น URL API จริงของคุณ
-
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        if (data['status'] == true) {
-          setState(() {
-            _users = data['data'];
-          });
-          for (var user in _users) {
-            print('Username: ${user['username']}, Password: ${user['passwords']}');
-          }
-        } else {
-          print('API error: ${data['message']}');
-        }
-      } else {
-        print('Server error: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Fetch error: $e');
-    }
-  }
-
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    FocusScope.of(context).unfocus(); // ปิด keyboard
+
     setState(() => _loading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _loading = false);
 
-    String inputUser = _userController.text.trim();
-    String inputPass = _passController.text.trim();
+    final username = _userController.text.trim();
+    final password = _passController.text.trim();
 
-    bool found = false;
-    for (var user in _users) {
-      if (user['username'] == inputUser && user['passwords'] == inputPass) {
-        // จริง ๆ ควรตรวจสอบ password ผ่าน API ฝั่ง server เพราะ password ถูก hash
-        found = true;
-        break;
+    try {
+      final response = await http.post(
+        Uri.parse("http://localhost/api/login.php"),
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: {
+          "username": username,
+          "password": password,
+        },
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainMobilePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'เกิดข้อผิดพลาด')),
+        );
       }
-    }
-    if (found) {
-      // ไปหน้า main_mobile
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainMobilePage()),
-      );
-    } else {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ไม่พบผู้ใช้')),
+        SnackBar(content: Text('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: $e')),
       );
     }
-  }
 
+    setState(() => _loading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
