@@ -23,13 +23,23 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
   final List<String> importanceOptions = ['ธรรมดา', 'สำคัญ', 'สำคัญมาก'];
 
   Future<bool> insertMedication() async {
-    final url = Uri.parse('http://localhost/api/insert_medication.php');  // แก้ URL ที่นี่
+    final url = Uri.parse('http://localhost/api/insert_medication.php');
+
+    // log ข้อมูลที่จะส่ง
+    print('🔹 Sending data to API:');
+    print({
+      'medication_name': medicationName,
+      'dosage_per_time': dosagePerTime,
+      'medication_type': medicationType,
+      'time_to_take': timeToTake,
+      'importance': importance,
+      'special_instructions': specialInstructions,
+    });
+
     try {
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
           'medication_name': medicationName,
           'dosage_per_time': dosagePerTime,
@@ -40,6 +50,9 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
         },
       );
 
+      print('🔹 Response status: ${response.statusCode}');
+      print('🔹 Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData['status'] == true;
@@ -47,7 +60,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
         return false;
       }
     } catch (e) {
-      // กรณีเกิดข้อผิดพลาด เช่น network
+      print('❌ Error sending request: $e');
       return false;
     }
   }
@@ -93,8 +106,9 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                 },
               ),
               TextFormField(
-                decoration:
-                    const InputDecoration(labelText: 'คำแนะนำพิเศษ / ข้อควรระวัง'),
+                decoration: const InputDecoration(
+                  labelText: 'คำแนะนำพิเศษ / ข้อควรระวัง',
+                ),
                 maxLines: 2,
                 onSaved: (value) => specialInstructions = value ?? '',
               ),
@@ -108,13 +122,16 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
 
                     if (success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('บันทึกข้อมูลยาเรียบร้อย')),
+                        const SnackBar(
+                          content: Text('บันทึกข้อมูลยาเรียบร้อย'),
+                        ),
                       );
                       Navigator.pop(context);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                            content: Text('เกิดข้อผิดพลาดในการบันทึกข้อมูลยา')),
+                          content: Text('เกิดข้อผิดพลาดในการบันทึกข้อมูลยา'),
+                        ),
                       );
                     }
                   }

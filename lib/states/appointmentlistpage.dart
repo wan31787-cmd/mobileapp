@@ -15,7 +15,7 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
   String errorMessage = '';
 
   // เปลี่ยน URL นี้เป็น URL จริงของ API คุณ
-  final String apiUrl = 'http://172.20.10.2/api/get_appointments.php';
+  final String apiUrl = 'http://localhost/api/get_appointments.php';
 
   @override
   void initState() {
